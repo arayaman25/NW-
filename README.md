@@ -1,43 +1,50 @@
-import socket
+def merge_sort(arr, st, end):
+    if st < end:
+        mid = st + (end - st) // 2
+        merge_sort(arr, st, mid)
+        merge_sort(arr, mid + 1, end)
+        merge(arr, st, mid, end)
 
-server = socket.socket()
 
-server.bind(("0.0.0.0", 8700))
-server.listen(1)
+def merge(arr, st, mid, end):
+    temp = [0] * (end - st + 1)
+    i = st
+    j = mid + 1
+    idx = 0
 
-print("Server waiting for client...")
+    while i <= mid and j <= end:
+        if arr[i] <= arr[j]:
+            temp[idx] = arr[i]
+            i = i + 1
+        else:
+            temp[idx] = arr[j]
+            j = j + 1
+        idx = idx + 1
 
-conn, addr = server.accept()
+    while i <= mid:
+        temp[idx] = arr[i]
+        i = i + 1
+        idx = idx + 1
 
-print("Client connected:", addr)
+    while j <= end:
+        temp[idx] = arr[j]
+        j = j + 1
+        idx = idx + 1
 
-# Receive file
-with open("received.txt", "wb") as file:
+    for idx in range(end - st + 1):
+        arr[idx + st] = temp[idx]
 
-    while True:
-        data = conn.recv(1024)
 
-        if not data:
-            break
+n = int(input("Enter number of elements: "))
+arr = [0] * n
+print("Enter array elements:")
 
-        file.write(data)
+for i in range(n):
+    arr[i] = int(input())
 
-print("File received successfully.")
+merge_sort(arr, 0, n - 1)
 
-# Send file back
-with open("received.txt", "rb") as file:
+print("Sorted array:")
 
-    while True:
-        data = file.read(1024)
-
-        if not data:
-            break
-
-        conn.send(data)
-
-print("File sent successfully.")
-
-conn.close()
-server.close()
-
-print("Server closed.")
+for i in range(n):
+    print(arr[i], end=" ")
