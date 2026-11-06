@@ -1,0 +1,76 @@
+import socket
+
+HOST = "192.168.31.30"
+PORT = 5152
+OUTPUT_FILE = "received_image.jpg"
+
+server = socket.socket()
+server.bind((HOST, PORT))
+server.listen(1)
+
+print("Server listening on port", PORT)
+
+conn, addr = server.accept()
+print("Connected by", addr)
+
+file_size_data = conn.recv(8)
+
+file_size = int.from_bytes(file_size_data, byteorder="big")
+
+print(f"Receiving file of size {file_size} bytes")
+
+received = 0
+
+with open(OUTPUT_FILE, "wb") as file:
+    while received < file_size:
+        data = conn.recv(min(4096, file_size - received))
+
+        if not data:
+            break
+
+        file.write(data)
+        received += len(data)
+
+print(f"Received {received} bytes")
+print(f"Image saved as {OUTPUT_FILE}")
+
+conn.close()
+server.close()
+
+-------------
+
+import socket
+import os
+
+SERVER_IP = "192.168.31.30"
+PORT = 5152
+
+IMAGE_FILE = "image(1).jpeg"
+
+client_socket = socket.socket(
+    socket.AF_INET,
+    socket.SOCK_STREAM
+)
+
+client_socket.connect((SERVER_IP, PORT))
+
+file_size = os.path.getsize(IMAGE_FILE)
+
+client_socket.sendall(
+    file_size.to_bytes(8, byteorder="big")
+)
+
+print(f"Sending {IMAGE_FILE} ({file_size} bytes)")
+
+with open(IMAGE_FILE, "rb") as file:
+    while True:
+        data = file.read(4096)
+
+        if not data:
+            break
+
+        client_socket.sendall(data)
+
+print("Image sent successfully!")
+
+client_socket.close()
