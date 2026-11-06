@@ -1,0 +1,96 @@
+import socket
+
+def calculate_checksum(data):
+    if len(data) % 2 != 0:
+        data += b'\x00'
+
+    s = 0
+
+    for i in range(0, len(data), 2):
+        w = (data[i] << 8) + data[i + 1]
+        s += w
+        s = (s >> 16) + (s & 0xFFFF)
+
+    s += s >> 16
+
+    return ~s & 0xFFFF
+
+
+HOST = "192.168.31.15"
+PORT = 8000
+
+server = socket.socket()
+server.bind((HOST, PORT))
+server.listen(1)
+
+print("Server is waiting for connection...")
+
+conn, addr = server.accept()
+
+print(f"Connected to: {addr}")
+
+received_data = conn.recv(1024)
+
+message = received_data[:-2]
+
+received_checksum = int.from_bytes(
+    received_data[-2:],
+    byteorder="big"
+)
+
+print(f"Client message (bytes): {message}")
+print(f"Received checksum: {received_checksum}")
+
+calculated_checksum = calculate_checksum(message)
+
+if calculated_checksum == received_checksum:
+    print("Status: NO error detected")
+else:
+    print("Error detected")
+
+conn.close()
+server.close()
+
+---------
+
+import socket
+
+def calculate_checksum(data):
+    if len(data) % 2 != 0:
+        data += b'\x00'
+
+    s = 0
+
+    for i in range(0, len(data), 2):
+        w = (data[i] << 8) + data[i + 1]
+        s += w
+        s = (s >> 16) + (s & 0xFFFF)
+
+    s += s >> 16
+
+    return ~s & 0xFFFF
+
+
+HOST = "192.168.31.15"
+PORT = 8000
+
+client = socket.socket()
+client.connect((HOST, PORT))
+
+message = b"Hello Server"
+
+checksum = calculate_checksum(message)
+
+packet = message + checksum.to_bytes(
+    2,
+    byteorder="big"
+)
+
+client.sendall(packet)
+
+print(
+    f"Sent message: {message.decode()} "
+    f"with checksum: {checksum}"
+)
+
+client.close()
