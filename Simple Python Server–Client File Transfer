@@ -1,0 +1,82 @@
+import socket
+
+server = socket.socket()
+server.bind(("0.0.0.0", 8700))
+server.listen(1)
+
+print("Server waiting for client...")
+
+conn, addr = server.accept()
+print("Client connected", addr)
+
+with open("received.txt", "wb") as file:
+    while True:
+        data = conn.recv(1024)
+
+        if not data:
+            break
+
+        file.write(data)
+
+print("File received successfully.")
+
+with open("received.txt", "rb") as file:
+    while True:
+        data = file.read(1024)
+
+        if not data:
+            break
+
+        conn.send(data)
+
+print("File sent successfully.")
+
+conn.close()
+server.close()
+
+print("Server closed.")
+
+
+-----------------
+
+import socket
+
+client = socket.socket()
+client.connect(("localhost", 8700))
+
+print("Connected to server.")
+
+with open("myfile.txt", "w") as file:
+    file.write("Hello Server!\n")
+    file.write("This file was created by the client.\n")
+    file.write("This is a simple file transfer example.\n")
+
+print("File created: myfile.txt")
+
+with open("myfile.txt", "rb") as file:
+    while True:
+        data = file.read(1024)
+
+        if not data:
+            break
+
+        client.send(data)
+
+print("File sent successfully.")
+
+client.shutdown(socket.SHUT_WR)
+
+with open("returned.txt", "wb") as file:
+    while True:
+        data = client.recv(1024)
+
+        if not data:
+            break
+
+        file.write(data)
+
+print("File received successfully.")
+print("Received file saved as: returned.txt")
+
+client.close()
+print("Client closed.")
