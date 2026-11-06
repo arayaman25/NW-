@@ -1,0 +1,96 @@
+import socket
+
+def xor_division(data, r):
+    temp_data = list(data)
+    r_len = len(r)
+
+    for i in range(len(temp_data) - r_len + 1):
+        if temp_data[i] == 1:
+            for j in range(r_len):
+                temp_data[i + j] ^= r[j]
+
+    return temp_data[-(r_len - 1):]
+
+
+HOST = "127.0.0.1"
+PORT = 4000
+
+server = socket.socket()
+server.bind((HOST, PORT))
+server.listen(1)
+
+print("Server is waiting for connection...")
+
+conn, addr = server.accept()
+print("Connected to:", addr)
+
+data = conn.recv(1024).decode()
+
+message, r = data.split("|")
+
+codeword = [int(bit) for bit in message]
+divisor = [int(bit) for bit in r]
+
+remainder = xor_division(codeword, divisor)
+
+remainder_str = "".join(map(str, remainder))
+
+print("Received Codeword:", message)
+print("Divisor:", r)
+print("Remainder:", remainder_str)
+
+if all(bit == 0 for bit in remainder):
+    print("Status: No error detected")
+else:
+    print("Status: Error detected")
+
+conn.close()
+server.close()
+
+
+_____________________
+
+import socket
+
+def xor_division(data, r):
+    temp_data = list(data)
+    r_len = len(r)
+
+    for i in range(len(temp_data) - r_len + 1):
+        if temp_data[i] == 1:
+            for j in range(r_len):
+                temp_data[i + j] ^= r[j]
+
+    return temp_data[-(r_len - 1):]
+
+
+HOST = "127.0.0.1"
+PORT = 4000
+
+m_str = input("Enter the binary data (M): ")
+r_str = input("Enter the divisor/generator (R): ")
+
+m = [int(bit) for bit in m_str]
+r = [int(bit) for bit in r_str]
+
+extended_m = m + [0] * (len(r) - 1)
+
+remainder = xor_division(extended_m, r)
+
+remainder_str = "".join(map(str, remainder))
+
+codeword = m_str + remainder_str
+
+print("CRC Checksum:", remainder_str)
+print("Final Codeword:", codeword)
+
+client = socket.socket()
+client.connect((HOST, PORT))
+
+packet = codeword + "|" + r_str
+
+client.sendall(packet.encode())
+
+print("Codeword sent successfully!")
+
+client.close()
