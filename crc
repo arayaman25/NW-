@@ -1,0 +1,44 @@
+def xor_division(data, r):
+    temp_data = list(data)
+    r_len = len(r)
+
+    for i in range(len(temp_data) - r_len + 1):
+        if temp_data[i] == 1:
+            for j in range(r_len):
+                temp_data[i + j] = temp_data[i + j] ^ r[j]
+
+    return temp_data[-(r_len - 1):]
+
+
+def crc_encoder():
+    m_str = input("Enter the binary data (M): ").strip()
+    r_str = input("Enter the divisor/generator (R): ").strip()
+
+    m = [int(bit) for bit in m_str]
+    r = [int(bit) for bit in r_str]
+
+    extended_m = m + [0] * (len(r) - 1)
+
+    remainder = xor_division(extended_m, r)
+
+    remainder_str = "".join(map(str, remainder))
+
+    codeword_str = m_str + remainder_str
+
+    print(f"CRC Checksum (Remainder): {remainder_str}")
+    print(f"Final codeword to transmit: {codeword_str}")
+
+    codeword_bits = [int(bit) for bit in codeword_str]
+
+    check_remainder = xor_division(codeword_bits, r)
+
+    check_remainder_str = "".join(map(str, check_remainder))
+
+    print(f"Check Remainder (Codeword XOR R): {check_remainder_str}")
+
+    is_valid = all(bit == 0 for bit in check_remainder)
+
+    print(f"Verification Status (Remainder is all zero): {is_valid}")
+
+
+crc_encoder()
