@@ -1,0 +1,37 @@
+import socket
+
+HOST = "127.0.0.1"
+PORT = 5000
+
+server = socket.socket()
+server.bind((HOST, PORT))
+server.listen(1)
+
+print("Server is waiting for connection...")
+
+conn, addr = server.accept()
+
+message = conn.recv(1024).decode()
+print("Client message:", message)
+
+conn.send("Hello Client!".encode())
+
+conn.close()
+server.close()
+
+-------------------
+
+import socket
+
+HOST = "127.0.0.1"
+PORT = 5000
+
+client = socket.socket()
+client.connect((HOST, PORT))
+
+client.send("Hello Server".encode())
+
+reply = client.recv(1024).decode()
+print("Server's reply:", reply)
+
+client.close()
