@@ -1,0 +1,55 @@
+import socket
+
+HOST = "127.0.0.1"
+PORT = 3000
+
+server = socket.socket()
+server.bind((HOST, PORT))
+server.listen(5)
+
+print("Server is listening for connection")
+
+conn, addr = server.accept()
+
+print("Connected to:", addr)
+
+while True:
+    data = conn.recv(1024).decode()
+
+    if not data:
+        break
+
+    print("Client message:", data)
+
+    server_data = input("Enter data to send to client: ")
+
+    if server_data == "exit":
+        break
+
+    conn.send(server_data.encode())
+
+conn.close()
+server.close()
+
+----------------
+
+import socket
+
+HOST = "127.0.0.1"
+PORT = 3000
+
+client = socket.socket()
+client.connect((HOST, PORT))
+
+while True:
+    client_data = input("Enter data to send to server: ")
+
+    if client_data == "exit":
+        break
+
+    client.send(client_data.encode())
+
+    reply = client.recv(1024).decode()
+    print("Server's reply:", reply)
+
+client.close()
